@@ -14,7 +14,7 @@
    purpose="Help enchant stuff."
    save_state="y"
    date_written="2016-08-26 19:07:01"
-   requires="4.98"
+   requires="4.79"
    version="1.0"
    >
 
@@ -28,6 +28,33 @@
 <!--  Triggers  -->
 
 <triggers>
+  <trigger
+   match="^Unsatisfied with your focus, you darken the (.*).$"
+   script="EnchanterDis"
+   regexp="y"
+   group="EnchantMsgs"
+   send_to="12"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   match="^Unsatisfied with your focus, you silence the (.*).$"
+   script="EnchanterDis"
+   regexp="y"
+   group="EnchantMsgs"
+   send_to="12"
+   sequence="100"
+  >
+  </trigger>
+  <trigger
+   match="^Unsatisfied with your focus, you return invisibility to (.*).$"
+   script="EnchanterDis"
+   regexp="y"
+   group="EnchantMsgs"
+   send_to="12"
+   sequence="100"
+  >
+  </trigger>
   <trigger
    match="^You buy (.*) from (.*) for (.*) gold.$"
    name="GetNameItem"
@@ -261,7 +288,7 @@ Send(id .. " %1")</send>
 <![CDATA[
 require "serialize"
 require "tprint"
-Debug = true
+Debug = false
 ThreeSuccessesVar = {false, false, false} 
 reEnchantFlag = {false, false, false}
 enchantCheck={false, false, false}
@@ -294,6 +321,10 @@ function flags (name, line, wildcards)
   end
   DebugNote(statHolder)
 end
+local FocusRemove = false
+function EnchanterDis ()
+  FocusRemove = true
+end
 function EnchanterFlag(name, line, wildcards)
  DebugNote(wildcards)
   if wildcards[1]== 'true' then
@@ -325,7 +356,11 @@ end
 function decideKeep()
   DebugNote("decideKeep")
   DebugNote(#statHolder)
-
+  if FocusRemove == true then
+    reEnchant(#statHolder)
+    FocusRemove = false
+    return
+  end
   local tbl = statHolder[#statHolder] or {}
   DebugNote(tbl)
   --for i, v in pairs (tbl) do
@@ -348,6 +383,7 @@ function decideKeep()
             TriggersOff()
           end
         elseif tbl[1] == "Solidify" and tbl[2] < 6 then
+          if tbl[3]== 6 then return end
           if reEnchantFlag[#statHolder] == false and tbl[2] ~= 0 then 
             reEnchant(#statHolder)
           else
@@ -385,12 +421,15 @@ function decideKeep()
           TriggersOff()
         end
       elseif tbl[1] == "Solidify" and tbl[2] < 6 then
+        if tbl[3]== 6 then return end
         if reEnchantFlag[#statHolder] == false and tbl[2] <6 and ENCHANTER == true then 
+          if tbl[3] == 6 then return end
           reEnchant(#statHolder)
         else
           Send("sell ".. GetName())
           tryAgain()
           TriggersOff()
+
         end
         DebugNote("Got to silidify")
       else 
@@ -404,84 +443,7 @@ function decideKeep()
           Send ("c 339 ".. GetName())
         end
       end
-      -- DebugNote("Illuminate == 4") 
-      -- DebugNote(v[1] == "Illuminate" and v[3] == 4)
-      -- DebugNote("Resonate == 3")
-      -- DebugNote(v[1] == "Resonate" and v[3] == 3)
-      -- DebugNote("Solidify == 6")
-      -- DebugNote(v[1] == "Solidify" and v[3] == 6)
-    --   DebugNote(v[1])
-    --   if (v[1] == "Illuminate" and v[3] <= 4) or (v[3] == 4 and statHolder[i+1] ~= nil and statHolder[i+1][1] == "Illuminate") then
-        
-    --     -- if statHolder[i+1] ~= nil and statHolder[i+1][1] == "Illuminate"  then 
-    --     --   DebugNote ("Is overmax on Illuminate")
-    --     -- else
-    --     --   DebugNote("Not over max")
-          
-    --       if reEnchantFlag[1] == false then --reEnchant("Illuminate") 
-    --         reEnchantFlag[1] = true
-    --         else Send ("sell ".. GetName())    end
-    --     -- end
-        
-    --   elseif (v[1] == "Resonate" and v[3] <= 3) or (v[3] == 3 and statHolder[i+1] ~= nil and statHolder[i+1][1] == "Resonate") then
-    --     -- if statHolder[i+1] ~= nil and statHolder[i+1][1] == "Resonate"  then 
-    --     --   DebugNote ("Is overmax on Resonate")
-    --     -- else
-    --     --   DebugNote("Not over max")
-    --       if reEnchantFlag[2] == false then --reEnchant("Resonate")
-    --         reEnchantFlag[2] = true
-    --         else Send ("sell ".. GetName())    end
-    --     -- end
-    --   elseif (v[1] == "Solidify" and v[3] <= 6) or (v[3] == 6 and statHolder[i+1] ~= nil and statHolder[i+1][1] == "Solidify") then
-    --     DebugNote("Got here")
-    --     -- if statHolder[i+1] ~= nil and statHolder[i+1][1] == "Solidify"  then 
-    --     --   DebugNote ("Is overmax on Solidify")
-    --     -- else
-    --     --   DebugNote("Not over max")
-    --       if reEnchantFlag[3] == false then --reEnchant("Solidify")
-    --         reEnchantFlag[3] = true
-    --       else Send ("sell ".. GetName())    end
-    --     -- end
-    --   else
-    --     DebugNote (" None were overmax")
-    --     if ENCHANTER  then
-    --       if reEnchantFlag[1] == false then reEnchant("Illuminate") end
-    --       if reEnchantFlag[2] == false then reEnchant("Resonate") end
-    --       if reEnchantFlag[3] == false then reEnchant("Solidify") end
-    --     else
-    --       --Send ("sell ".. GetName())
-    --       return
-    --     end
-    --   end
-
-    -- else -- if the MAX_FLAG IS OFF THIS BLOCK HANDLES SHIT NOT NEEDED TO BE OVERMAX
-    --   local keepThree = {false, false, false}
-    --   DebugNote("wtf?")
-    --   DebugNote(v)
-    --   DebugNote(type(v[3]))
-    --   if v[1] == "Illuminate" and v[3] == 4 then
-    --     DebugNote(v[1])
-    --     DebugNote ("Is overmax on Illuminate")
-    --     keepThree[1] = true      
-    --   elseif v[1] == "Resonate" and v[3] == 3 then
-    --      keepThree[2] = true  
-    --   elseif v[1] == "Solidify" and v[3] == 6 then
-    --       keepThree[3] = true
-    --   else
-    --     DebugNote (" None were max  or one was overmax")
-    --   end
-    --   if ENCHANTER then
-    --     if keepThree[1] == false then reEnchant("Illuminate") end
-    --     if keepThree[2] == false then reEnchant("Resonate") end
-    --     if keepThree[3] == false then reEnchant("Solidify") end
-    --   end
-    --   for i, p in pairs (keepThree) do 
-    --       if p == false then 
-
-    --        -- Send ("sell ".. GetName())
-    --         return
-    --       end
-    --     end
+     
     end
  -- end
  
@@ -496,7 +458,11 @@ function reEnchant(msg)
   DebugNote(reEnchantFlag)
   DebugNote(msg)
   if not ENCHANTER then return end
-  if  reEnchantFlag[msg] == false  then
+  DebugNote(tostring(FocusRemove))
+  if FocusRemove == true then
+    Send("c " .. statHolder[msg][1].. " ".. GetName())
+    EnableTrigger("IllumSuccessMsg", 1)
+  elseif  reEnchantFlag[msg] == false  then
     Send("Disenchant ".." "..GetName().." ".. statHolder[msg][1].. " ".. "confirm")
     Send("c " .. statHolder[msg][1].. " ".. GetName())
     statHolder[msg][2] = 0
