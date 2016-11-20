@@ -462,6 +462,7 @@ function reEnchant(msg)
   if FocusRemove == true then
     Send("c " .. statHolder[msg][1].. " ".. GetName())
     EnableTrigger("IllumSuccessMsg", 1)
+    FocusRemove = false
   elseif  reEnchantFlag[msg] == false  then
     Send("Disenchant ".." "..GetName().." ".. statHolder[msg][1].. " ".. "confirm")
     Send("c " .. statHolder[msg][1].. " ".. GetName())
