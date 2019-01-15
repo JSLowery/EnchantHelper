@@ -721,6 +721,7 @@ Note("")
 Note("Use 'EOVERMAX true' to turn on Overmax")
 Note("Use 'EENCHANTER true' to turn on Enchanter flag")
 Note("Use 'ESHOULDBUY <1|0>' to toggle the buying functionality")
+Note("Use 'Estart <item>'' to start the script")
 end
 ]]>
 </script>
