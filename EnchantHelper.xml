@@ -262,6 +262,15 @@ Send(id .. " %1")</send>
   </alias>
   <alias
    enabled="y"
+   match="^ESHOULDBUY (0|1)$"
+   regexp="y"
+   script="ShouldBuy"
+   send_to="12"
+   sequence="100"
+  >
+  </alias>
+  <alias
+   enabled="y"
    match="^EENCHANTER (true|false)$"
    regexp="y"
    script="EnchanterFlag"
@@ -306,6 +315,7 @@ local Resonate_Other = ""
 local Solidify_Hitroll = ""
 local Solidify_Damroll = ""
 LastSpell = ""
+Should_Buy = 0
 function flags (name, line, wildcards)
   DebugNote(wildcards)
   enchantCheck={false, false, false}
@@ -324,6 +334,10 @@ end
 local FocusRemove = false
 function EnchanterDis ()
   FocusRemove = true
+end
+function ShouldBuy(name, line, wildcards)
+  flag = tonumber(wildcards[1])
+  Should_Buy = flag
 end
 function EnchanterFlag(name, line, wildcards)
  DebugNote(wildcards)
@@ -344,11 +358,13 @@ function OverMaxFlags(name, line, wildcards)
   Note("Over Max flag ="..tostring(MAX_FLAG))
 end
 function StartTheProcesses(name, line, wildcards)
-DebugNote("StartTheProcesses")
+  DebugNote("StartTheProcesses")
   DebugNote(wildcards)
- -- Send("buy "..wildcards[1])
- statHolder = {}
- statHolder[1] = {"Illuminate", 0, 0}
+  if Should_Buy == 1 then
+    Send("buy "..wildcards[1])
+  end
+  statHolder = {}
+  statHolder[1] = {"Illuminate", 0, 0}
   SetName(wildcards[1])
   reEnchantFlag= {false, false,false }
   EnchantItems()
@@ -704,6 +720,7 @@ Note("  The default is OVERMAX no and not an enchanter!")
 Note("")
 Note("Use 'EOVERMAX true' to turn on Overmax")
 Note("Use 'EENCHANTER true' to turn on Enchanter flag")
+Note("Use 'ESHOULDBUY <1|0>' to toggle the buying functionality")
 end
 ]]>
 </script>
